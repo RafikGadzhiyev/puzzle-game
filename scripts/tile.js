@@ -55,46 +55,25 @@ function getTiles(ctx, image, rawTiles, splitCoords, pieceSize, options) {
 		isUpdateRandomly = true,
 		SPLIT_TIMES
 	} = options
-	const updatedTiles = []
+	const updatedTiles = Array(rawTiles.length).fill({})
 
 	let tileCount = 1;
 
-	while (rawTiles.length) {
+	while (tileCount - 1 !== rawTiles.length ) {
 		let randomTileIndex = isUpdateRandomly
-			? Math.floor(Math.random() * rawTiles.length)
+			? getRandomNumberUntilSuccess(rawTiles)
 			: 0
 
 		let randomTile = rawTiles[randomTileIndex]
 
-		const {
-			image,
-			dx,
-			dy,
-			dWidth,
-			dHeight
-		} = randomTile
-
-		ctx.drawImage(
-			image,
-			splitCoords.sx,
-			splitCoords.sy,
-			pieceSize.width,
-			pieceSize.height,
-			dx,
-			dy,
-			dWidth,
-			dHeight
-		)
-
-		updatedTiles.push(
-			{
+		updatedTiles[randomTileIndex] = {
 				...randomTile,
 				sx: splitCoords.sx,
 				sy: splitCoords.sy,
 				sWidth: pieceSize.width,
 				sHeight: pieceSize.height,
+				rIndex: randomTileIndex
 			}
-		)
 
 		splitCoords.sx += pieceSize.width
 
@@ -104,8 +83,21 @@ function getTiles(ctx, image, rawTiles, splitCoords, pieceSize, options) {
 		}
 
 		tileCount++;
-		rawTiles.splice(randomTileIndex, 1)
+		rawTiles[randomTileIndex] = null
 	}
 
 	return updatedTiles
+}
+
+function getRandomNumberUntilSuccess(array) {
+	let randomIndex;
+
+	while(
+		randomIndex === undefined
+		|| !array[randomIndex]
+	) {
+		randomIndex = Math.floor(Math.random() * array.length)
+	}
+
+	return randomIndex
 }
